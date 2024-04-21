@@ -64,7 +64,7 @@ CREATE TABLE FriendRequests (
     RequestID SERIAL PRIMARY KEY,
     SenderID INT REFERENCES Users(UserID),
     ReceiverID INT REFERENCES Users(UserID),
-    RequestStatus status
+	RequestStatus status
 );
 
 CREATE TABLE UserNeighbors (

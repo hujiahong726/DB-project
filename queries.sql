@@ -49,8 +49,52 @@
 
 
 
--- friends
+-- -- add friends
+-- -- INSERT INTO FriendRequests(SenderID, ReceiverID, RequestStatus) VALUES(1, 5, 'PENDING');
 
+-- -- approve friend request
+-- -- Update the status of the request
+-- UPDATE FriendRequests SET RequestStatus = 'ACCEPTED' WHERE SenderID = 1 AND ReceiverID = 5;
+
+-- -- Insert a new entry into the UserFriends table
+-- INSERT INTO UserFriends(UserID1, UserID2) VALUES(1, 5);
+
+-- -- Delete the request from the FriendRequests table
+-- DELETE FROM FriendRequests WHERE SenderID = 1 AND ReceiverID = 5 AND RequestStatus = 'ACCEPTED';
+
+-- INSERT INTO userblocks (userid, blockid, isJoined) VALUES(2, 2, TRUE);
+-- INSERT INTO userblocks (userid, blockid, isJoined) VALUES(3, 2, TRUE);
+-- INSERT INTO userblocks (userid, blockid, isJoined) VALUES(4, 3, TRUE);
+-- INSERT INTO userblocks (userid, blockid, isJoined) VALUES(5, 3, TRUE);
+
+-- -- add neighbor
+-- INSERT INTO userneighbors VALUES (2, 3);
+-- INSERT INTO userneighbors VALUES (4, 5);
+
+-- -- inserted data to test list all friends query
+-- INSERT INTO UserFriends(UserID1, UserID2) VALUES(3, 1);
+
+-- -- list all friends
+-- SELECT Users.UserID, Users.UserName
+-- FROM Users
+-- JOIN UserFriends ON Users.UserID = CASE
+--     WHEN UserFriends.UserID1 = 1 THEN UserFriends.UserID2
+--     ELSE UserFriends.UserID1
+--     END
+-- WHERE UserFriends.UserID1 = 1 OR UserFriends.UserID2 = 1;
+
+-- -- list all neighbors
+-- SELECT Users.UserID, Users.UserName
+-- FROM Users
+-- JOIN UserNeighbors ON Users.UserID = UserNeighbors.UserID2
+-- WHERE UserNeighbors.UserID1 = 2;
+
+
+
+
+
+-- get messages
+-- 
 
 
 
