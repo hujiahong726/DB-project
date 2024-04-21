@@ -81,8 +81,8 @@ CREATE TABLE Threads (
     ThreadID SERIAL PRIMARY KEY,
     LocationLatitude DECIMAL(9,6),
     LocationLongitude DECIMAL(9,6),
-	RecipientID INT REFERENCES Users(UserID),
-	Target target
+    RecipientID INT REFERENCES Users(UserID),
+    Target target
 );
 
 CREATE TABLE Messages (
