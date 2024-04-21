@@ -43,6 +43,13 @@ CREATE TABLE BlockRequests (
     ApprovedCount INT
 );
 
+CREATE TABLE RequestApprovals (
+    ApprovalID SERIAL PRIMARY KEY,
+    RequestID INT REFERENCES BlockRequests(RequestID),
+    ApproverID INT REFERENCES Users(UserID),
+    UNIQUE(RequestID, ApproverID)
+);
+
 CREATE TABLE UserFriends (
     UserID1 INT,
     UserID2 INT,
