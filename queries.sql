@@ -21,17 +21,28 @@
 -- -- apply to become members of a block
 -- INSERT INTO BlockRequests (SenderID, BlockID, ApprovedCount) VALUES (1, 1, 0);
 
--- edit profiles
+-- -- edit profiles
+-- UPDATE Users
+-- SET Profile = 'Leader'
+-- WHERE UserID = 1;
 
 
--- -- UserActivities table
--- Insert INTO UserActivity (UserID, LastAccessTimestamp)
--- VALUES
--- 	(1, '2024-03-21 12:30:15'),
--- 	(2, '2024-06-11 18:45:22'),
--- 	(3, '2024-09-07 07:15:33'),
--- 	(4, '2024-12-19 23:55:44'),
--- 	(5, '2025-02-28 14:35:50');
+
+
+-- content posting
+-- initial message
+-- Start a thread by posting a message from userid 1 to userid 2, as friend
+INSERT INTO Threads (LocationLatitude, LocationLongitude, RecipientID, Target)
+VALUES (0, 0, 2, 'friend');
+INSERT INTO Messages (ThreadID, Title, AuthorID, Timestamp, Body)
+VALUES (currval('Threads_ThreadID_seq'), 'War in Gaza', 1, CURRENT_TIMESTAMP, 'This is a friendly message');
+
+-- Start another thread by posting another message from userid 2 to userid 3, as neighbor
+INSERT INTO Threads (LocationLatitude, LocationLongitude, RecipientID, Target)
+VALUES (0, 0, 3, 'neighbor');
+INSERT INTO Messages (ThreadID, Title, AuthorID, Timestamp, Body)
+VALUES (currval('Threads_ThreadID_seq'), 'Hello', 2, CURRENT_TIMESTAMP, 'This is a neighborly message');
+
 
 
 

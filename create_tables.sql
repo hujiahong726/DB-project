@@ -75,10 +75,14 @@ CREATE TABLE UserNeighbors (
     PRIMARY KEY (UserID1, UserID2)
 );
 
+CREATE TYPE target AS ENUM ('friend', 'neighbor', 'hood', 'block');
+
 CREATE TABLE Threads (
     ThreadID SERIAL PRIMARY KEY,
     LocationLatitude DECIMAL(9,6),
-    LocationLongitude DECIMAL(9,6)
+    LocationLongitude DECIMAL(9,6),
+	RecipientID INT REFERENCES Users(UserID),
+	Target target
 );
 
 CREATE TABLE Messages (
@@ -90,13 +94,4 @@ CREATE TABLE Messages (
     Body TEXT
 );
 
-CREATE TYPE target AS ENUM ('friend', 'neighbor', 'hood', 'block');
-
-CREATE TABLE ThreadRecipients (
-    ThreadID INT REFERENCES Threads(ThreadID),
-    RecipientID INT REFERENCES Users(UserID),
-    LastViewTimestamp TIMESTAMP,
-    Target target,
-    PRIMARY KEY (ThreadID, RecipientID)
-);
 
