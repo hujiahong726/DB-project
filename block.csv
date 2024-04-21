@@ -1,7 +1,0 @@
-BlockID,Name,CenterLatitude,CenterLongitude,Radius,NeighborhoodID
--------------------------------------------------------------------------------
-1,Block A,40.7128,-74.0060,2.5,1
-2,Block B,34.0522,-118.2437,3.0,2
-3,Block C,51.5074,-0.1278,2.0,2
-4,Block D,
-5,Block E,
