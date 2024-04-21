@@ -79,16 +79,16 @@ CREATE TYPE target AS ENUM ('friend', 'neighbor', 'hood', 'block');
 
 CREATE TABLE Threads (
     ThreadID SERIAL PRIMARY KEY,
+	Title VARCHAR(255),
     LocationLatitude DECIMAL(9,6),
     LocationLongitude DECIMAL(9,6),
-    RecipientID INT REFERENCES Users(UserID),
-    Target target
+	RecipientID INT REFERENCES Users(UserID),
+	Target target
 );
 
 CREATE TABLE Messages (
     MessageID SERIAL PRIMARY KEY,
     ThreadID INT REFERENCES Threads(ThreadID),
-    Title VARCHAR(255),
     AuthorID INT REFERENCES Users(UserID),
     Timestamp TIMESTAMP,
     Body TEXT

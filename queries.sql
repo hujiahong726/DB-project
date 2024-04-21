@@ -29,20 +29,27 @@
 
 
 
--- content posting
--- initial message
--- Start a thread by posting a message from userid 1 to userid 2, as friend
-INSERT INTO Threads (LocationLatitude, LocationLongitude, RecipientID, Target)
-VALUES (0, 0, 2, 'friend');
-INSERT INTO Messages (ThreadID, Title, AuthorID, Timestamp, Body)
-VALUES (currval('Threads_ThreadID_seq'), 'War in Gaza', 1, CURRENT_TIMESTAMP, 'This is a friendly message');
+-- -- content posting
+-- -- Start a thread from userid 1 to userid 2
+-- INSERT INTO Threads (Title, LocationLatitude, LocationLongitude, RecipientID, Target)
+-- VALUES ('Economy', 0, 0, 2, 'friend');
+-- INSERT INTO Messages (ThreadID, AuthorID, Timestamp, Body)
+-- VALUES (currval('Threads_ThreadID_seq'), 1, CURRENT_TIMESTAMP, 'The economy is recovering');
 
--- Start another thread by posting another message from userid 2 to userid 3, as neighbor
-INSERT INTO Threads (LocationLatitude, LocationLongitude, RecipientID, Target)
-VALUES (0, 0, 3, 'neighbor');
-INSERT INTO Messages (ThreadID, Title, AuthorID, Timestamp, Body)
-VALUES (currval('Threads_ThreadID_seq'), 'Hello', 2, CURRENT_TIMESTAMP, 'This is a neighborly message');
+-- -- Start a thread from userid 2 to userid 3
+-- INSERT INTO Threads (Title, LocationLatitude, LocationLongitude, RecipientID, Target)
+-- VALUES ('Discount', 34.053233, -118.241670, 3, 'neighbor');
+-- INSERT INTO Messages (ThreadID, AuthorID, Timestamp, Body)
+-- VALUES (currval('Threads_ThreadID_seq'), 2, CURRENT_TIMESTAMP, 'Discount at the local deli');
 
+-- -- replies
+-- INSERT INTO Messages (ThreadID, AuthorID, Timestamp, Body)
+-- VALUES (2, 3, CURRENT_TIMESTAMP, '@bob456. Heading over right now');
+
+
+
+
+-- friends
 
 
 
