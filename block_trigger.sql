@@ -10,7 +10,7 @@ BEGIN
     IF is_member THEN
         RAISE EXCEPTION 'User is already a member of the block.';
     END IF;
-	
+
     -- Get the user's location
     SELECT POINT(Latitude, Longitude) INTO user_location FROM Users WHERE UserID = NEW.SenderID;
 

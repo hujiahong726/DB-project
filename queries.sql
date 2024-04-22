@@ -108,7 +108,7 @@
 -- WHERE Threads.RecipientID = 3
 -- AND Threads.Target = 'neighbor';
 
--- -- add data to test block feed
+-- -- insert data to test block feed
 -- INSERT INTO Threads (Title, LocationLatitude, LocationLongitude, RecipientID, Target)
 -- VALUES ('Incident near Brooklyn Bridge', 40.712603, -74.005277, 3, 'block');
 -- INSERT INTO Messages (ThreadID, AuthorID, Timestamp, Body)
@@ -142,6 +142,30 @@
 --    OR (UserNeighbors.UserID1 = 4 AND Threads.Target = 'hood')
 --    OR (Threads.RecipientID = 4 AND (Threads.Target = 'friend' OR Threads.Target = 'neighbor' ))
 --    AND (Messages.Body ILIKE '%incident%' OR Threads.Title ILIKE '%incident%');
+
+-- -- insert data to test location queries
+-- INSERT INTO Threads (Title, LocationLatitude, LocationLongitude, RecipientID, Target)
+-- VALUES ('Incident in Flushing', 40.761918, -73.830656, 3, 'block');
+-- INSERT INTO Messages (ThreadID, AuthorID, Timestamp, Body)
+-- VALUES (currval('Threads_ThreadID_seq'), 4, CURRENT_TIMESTAMP, 'Incident in Flushing. Please be careful.');
+
+-- messages within 1 mile of where the user lives
+SELECT Threads.ThreadID, Threads.Title, Threads.LocationLatitude, Threads.LocationLongitude,
+       Messages.MessageID, Messages.AuthorID, Messages.Timestamp, Messages.Body
+FROM Threads
+JOIN Users ON Threads.RecipientID = Users.UserID
+JOIN Messages ON Threads.ThreadID = Messages.ThreadID
+LEFT JOIN UserBlocks ON Threads.RecipientID = UserBlocks.BlockID
+LEFT JOIN UserNeighbors ON Threads.RecipientID = UserNeighbors.UserID2
+WHERE (UserBlocks.UserID = 5 AND Threads.Target = 'block')
+   OR (UserNeighbors.UserID1 = 5 AND Threads.Target = 'hood')
+   OR (Threads.RecipientID = 5 AND (Threads.Target = 'friend' OR Threads.Target = 'neighbor' ))
+   AND (
+    ST_Distance(
+        ST_SetSRID(ST_MakePoint(Threads.LocationLongitude, Threads.LocationLatitude), 4326),
+        ST_SetSRID(ST_MakePoint(Users.Longitude, Users.Latitude), 4326)
+    ) * 0.000621371  -- Convert meters to miles
+	) <= 1
 
 
 
