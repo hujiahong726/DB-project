@@ -93,8 +93,55 @@
 
 
 
--- get messages
--- 
+-- -- get messages
+-- -- friend feed
+-- SELECT Messages.MessageID, Messages.AuthorID, Messages.Body
+-- FROM Messages
+-- JOIN Threads ON Messages.ThreadID = Threads.ThreadID
+-- WHERE Threads.RecipientID = 2
+-- AND Threads.Target = 'friend';
+
+-- -- neighbor feed
+-- SELECT Threads.ThreadID, Messages.MessageID, Messages.AuthorID, Messages.Body
+-- FROM Messages
+-- JOIN Threads ON Messages.ThreadID = Threads.ThreadID
+-- WHERE Threads.RecipientID = 3
+-- AND Threads.Target = 'neighbor';
+
+-- -- add data to test block feed
+-- INSERT INTO Threads (Title, LocationLatitude, LocationLongitude, RecipientID, Target)
+-- VALUES ('Incident near Brooklyn Bridge', 40.712603, -74.005277, 3, 'block');
+-- INSERT INTO Messages (ThreadID, AuthorID, Timestamp, Body)
+-- VALUES (currval('Threads_ThreadID_seq'), 4, CURRENT_TIMESTAMP, 'Incident near Manhattan end of Brooklyn Bridge. Please be careful.');
+
+-- INSERT INTO Threads (Title, LocationLatitude, LocationLongitude, RecipientID, Target)
+-- VALUES ('Incident at Chambers Street Station', 40.714163, -74.008552, 3, 'block');
+-- INSERT INTO Messages (ThreadID, AuthorID, Timestamp, Body)
+-- VALUES (currval('Threads_ThreadID_seq'), 4, '2023-12-21 17:04:04.616445', 'Incident at Chambers Street Subway Station. Please be careful.');
+
+-- INSERT INTO UserActivity (UserID, LastAccessTimestamp) VALUES (4, TIMESTAMP '2024-01-01 00:00:00');
+
+-- -- block feed with new messages
+-- SELECT Threads.ThreadID, Threads.Title, Threads.LocationLatitude, Threads.LocationLongitude,
+--        Messages.MessageID, Messages.AuthorID, Messages.Timestamp, Messages.Body
+-- FROM Threads
+-- JOIN Messages ON Threads.ThreadID = Messages.ThreadID
+-- JOIN UserBlocks ON Threads.RecipientID = UserBlocks.BlockID
+-- JOIN UserActivity ON UserBlocks.UserID = UserActivity.UserID
+-- WHERE UserBlocks.UserID = 4
+-- AND Threads.Target = 'block'
+-- AND Messages.Timestamp > UserActivity.LastAccessTimestamp;
+
+-- SELECT Threads.ThreadID, Threads.Title, Threads.LocationLatitude, Threads.LocationLongitude,
+--        Messages.MessageID, Messages.AuthorID, Messages.Timestamp, Messages.Body
+-- FROM Threads
+-- JOIN Messages ON Threads.ThreadID = Messages.ThreadID
+-- LEFT JOIN UserBlocks ON Threads.RecipientID = UserBlocks.BlockID
+-- LEFT JOIN UserNeighbors ON Threads.RecipientID = UserNeighbors.UserID2
+-- WHERE (UserBlocks.UserID = 4 AND Threads.Target = 'block')
+--    OR (UserNeighbors.UserID1 = 4 AND Threads.Target = 'hood')
+--    OR (Threads.RecipientID = 4 AND (Threads.Target = 'friend' OR Threads.Target = 'neighbor' ))
+--    AND (Messages.Body ILIKE '%incident%' OR Threads.Title ILIKE '%incident%');
 
 
 
