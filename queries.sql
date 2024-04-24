@@ -132,16 +132,29 @@
 -- AND Threads.Target = 'block'
 -- AND Messages.Timestamp > UserActivity.LastAccessTimestamp;
 
+-- -- old "incident" query
 -- SELECT Threads.ThreadID, Threads.Title, Threads.LocationLatitude, Threads.LocationLongitude,
 --        Messages.MessageID, Messages.AuthorID, Messages.Timestamp, Messages.Body
 -- FROM Threads
 -- JOIN Messages ON Threads.ThreadID = Messages.ThreadID
 -- LEFT JOIN UserBlocks ON Threads.RecipientID = UserBlocks.BlockID
--- LEFT JOIN UserNeighbors ON Threads.RecipientID = UserNeighbors.UserID2
+-- LEFT JOIN UserNeighbors ON Threads.RecipientID = 
 -- WHERE (UserBlocks.UserID = 4 AND Threads.Target = 'block')
 --    OR (UserNeighbors.UserID1 = 4 AND Threads.Target = 'hood')
 --    OR (Threads.RecipientID = 4 AND (Threads.Target = 'friend' OR Threads.Target = 'neighbor' ))
 --    AND (Messages.Body ILIKE '%incident%' OR Threads.Title ILIKE '%incident%');
+
+SELECT Threads.ThreadID, Threads.Title, Threads.LocationLatitude, Threads.LocationLongitude,
+       Messages.MessageID, Messages.AuthorID, Messages.Timestamp, Messages.Body
+FROM Threads
+JOIN Messages ON Threads.ThreadID = Messages.ThreadID
+LEFT JOIN UserBlocks AS UB1 ON Threads.RecipientID = UB1.BlockID
+LEFT JOIN (UserBlocks AS UB2 JOIN Blocks ON UB2.BlockID = Blocks.BlockID) 
+			ON Threads.RecipientID = Blocks.NeighborhoodID
+WHERE (UB1.UserID = 4 AND Threads.Target = 'block')
+   OR (Threads.RecipientID = 4 AND Threads.Target = 'hood')
+   OR (Threads.RecipientID = 4 AND (Threads.Target = 'friend' OR Threads.Target = 'neighbor' ))
+   AND (Messages.Body ILIKE '%incident%' OR Threads.Title ILIKE '%incident%');
 
 -- -- insert data to test location queries
 -- INSERT INTO Threads (Title, LocationLatitude, LocationLongitude, RecipientID, Target)
@@ -149,23 +162,85 @@
 -- INSERT INTO Messages (ThreadID, AuthorID, Timestamp, Body)
 -- VALUES (currval('Threads_ThreadID_seq'), 4, CURRENT_TIMESTAMP, 'Incident in Flushing. Please be careful.');
 
--- messages within 1 mile of where the user lives
-SELECT Threads.ThreadID, Threads.Title, Threads.LocationLatitude, Threads.LocationLongitude,
-       Messages.MessageID, Messages.AuthorID, Messages.Timestamp, Messages.Body
-FROM Threads
-JOIN Users ON Threads.RecipientID = Users.UserID
-JOIN Messages ON Threads.ThreadID = Messages.ThreadID
-LEFT JOIN UserBlocks ON Threads.RecipientID = UserBlocks.BlockID
-LEFT JOIN UserNeighbors ON Threads.RecipientID = UserNeighbors.UserID2
-WHERE (UserBlocks.UserID = 5 AND Threads.Target = 'block')
-   OR (UserNeighbors.UserID1 = 5 AND Threads.Target = 'hood')
-   OR (Threads.RecipientID = 5 AND (Threads.Target = 'friend' OR Threads.Target = 'neighbor' ))
-   AND (
-    ST_Distance(
-        ST_SetSRID(ST_MakePoint(Threads.LocationLongitude, Threads.LocationLatitude), 4326),
-        ST_SetSRID(ST_MakePoint(Users.Longitude, Users.Latitude), 4326)
-    ) * 0.000621371  -- Convert meters to miles
-	) <= 1
+-- -- messages within 1 mile of where the user lives
+-- SELECT Threads.ThreadID, Threads.Title, Threads.LocationLatitude, Threads.LocationLongitude,
+--        Messages.MessageID, Messages.AuthorID, Messages.Timestamp, Messages.Body
+-- FROM Threads
+-- JOIN Users ON Threads.RecipientID = Users.UserID
+-- JOIN Messages ON Threads.ThreadID = Messages.ThreadID
+-- LEFT JOIN UserBlocks ON Threads.RecipientID = UserBlocks.BlockID
+-- LEFT JOIN UserNeighbors ON Threads.RecipientID = UserNeighbors.UserID2
+-- WHERE (UserBlocks.UserID = 5 AND Threads.Target = 'block')
+--    OR (UserNeighbors.UserID1 = 5 AND Threads.Target = 'hood')
+--    OR (Threads.RecipientID = 5 AND (Threads.Target = 'friend' OR Threads.Target = 'neighbor' ))
+--    AND
+--   		(ST_Distance(
+--                ST_SetSRID(ST_MakePoint(CAST(Users.Latitude AS DOUBLE PRECISION), CAST(Users.Longitude AS DOUBLE PRECISION)), 4326),
+--                ST_SetSRID(ST_MakePoint(CAST(Threads.LocationLatitude AS DOUBLE PRECISION), CAST(Threads.LocationLongitude AS DOUBLE PRECISION)), 4326)
+--            ) * 0.000621371  -- Convert meters to miles
+-- 	 <= 1)
 
+-- -- Geographic search
+-- -- Function for calculating distance from coordinates
+-- CREATE OR REPLACE FUNCTION calculate_distance(lat1 float, lon1 float, lat2 float, lon2 float, units varchar)
+-- RETURNS float AS $dist$
+--     DECLARE
+--         dist float = 0;
+--         radlat1 float;
+--         radlat2 float;
+--         theta float;
+--         radtheta float;
+--     BEGIN
+--         IF lat1 = lat2 AND lon1 = lon2
+--             THEN RETURN dist;
+--         ELSE
+--             radlat1 = pi() * lat1 / 180;
+--             radlat2 = pi() * lat2 / 180;
+--             theta = lon1 - lon2;
+--             radtheta = pi() * theta / 180;
+--             dist = sin(radlat1) * sin(radlat2) + cos(radlat1) * cos(radlat2) * cos(radtheta);
 
+--             IF dist > 1 THEN dist = 1; END IF;
 
+--             dist = acos(dist);
+--             dist = dist * 180 / pi();
+--             dist = dist * 60 * 1.1515;
+
+--             IF units = 'K' THEN dist = dist * 1.609344; END IF;
+--             IF units = 'N' THEN dist = dist * 0.8684; END IF;
+
+--             RETURN dist;
+--         END IF;
+--     END;
+-- $dist$ LANGUAGE plpgsql;
+-- WITH userHood AS (
+-- 	SELECT userID, neighborhoodID
+-- 	FROM userblocks u, blocks b
+-- 	WHERE u.blockID = b.blockID),
+
+-- allMessages AS (
+-- 	SELECT threads.threadID, threads.LocationLatitude, threads.LocationLongitude
+-- 	FROM threads 
+-- 	JOIN messages m ON threads.threadID = m.threadID
+-- 	LEFT JOIN userblocks ub ON threads.recipientID = ub.blockID
+-- 	LEFT JOIN userHood uh  ON threads.recipientID = uh.neighborhoodID
+-- 	WHERE (ub.userID = 4 AND threads.target = 'block')
+-- 	OR (uh.userID = 4 AND threads.target='hood')
+-- 	OR(threads.recipientID=4 AND (threads.target='friend' OR threads.target='neighbor'))),
+
+-- userLocation AS (
+-- 	SELECT Latitude, Longitude
+-- 	FROM users
+-- 	WHERE userID=4
+-- ),
+
+-- distanceCalculation AS (
+-- 	SELECT allMessages.threadID, calculate_distance(allMessages.LocationLatitude, 
+-- 													allMessages.LocationLongitude, 
+-- 													userLocation.Latitude, 
+-- 													userLocation.Longitude, 'M') as dist
+-- 	FROM allMessages
+-- 	JOIN userLocation ON TRUE
+-- )
+
+-- SELECT * FROM distanceCalculation WHERE dist<1;
